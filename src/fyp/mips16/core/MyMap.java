@@ -8,7 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Stores opcodes for proper mnemonics with their Format Encoding.
+ * Format of the opcode value is no. of operands(1 digit) the location of operands (3 digits) and the actual opcode (2 digits).
  * @author Akhil
  */
 public class MyMap {
@@ -26,59 +27,59 @@ public class MyMap {
             registers.put("R"+i,i);
         }
         // Arithmetic Instructions
-        opcodes.put("ADD",0);   opcodes_tail.put("ADD",0);
-        opcodes.put("add",0);   opcodes_tail.put("add",0);
-        opcodes.put("ADC",0);   opcodes_tail.put("ADC",1);
-        opcodes.put("adc",0);   opcodes_tail.put("adc",1);
-        opcodes.put("SUB",1);   opcodes_tail.put("SUB",0);
-        opcodes.put("sub",1);   opcodes_tail.put("sub",0);
-        opcodes.put("SBB",1);   opcodes_tail.put("SBB",1);
-        opcodes.put("sbb",1);   opcodes_tail.put("sbb",1);
+        opcodes.put("ADD",311100);   opcodes_tail.put("ADD",0);
+        opcodes.put("add",311100);   opcodes_tail.put("add",0);
+        opcodes.put("ADC",311100);   opcodes_tail.put("ADC",1);
+        opcodes.put("adc",311100);   opcodes_tail.put("adc",1);
+        opcodes.put("SUB",311101);   opcodes_tail.put("SUB",0);
+        opcodes.put("sub",311101);   opcodes_tail.put("sub",0);
+        opcodes.put("SBB",311101);   opcodes_tail.put("SBB",1);
+        opcodes.put("sbb",311101);   opcodes_tail.put("sbb",1);
         //Logical Instructions
-        opcodes.put("AND",2);   opcodes_tail.put("AND",0);   
-        opcodes.put("and",2);   opcodes_tail.put("and",0);
-        opcodes.put("OR",2);    opcodes_tail.put("OR",1);
-        opcodes.put("or",2);    opcodes_tail.put("or",1);
-        opcodes.put("NOT",2);   opcodes_tail.put("NOT",2);
-        opcodes.put("not",2);   opcodes_tail.put("not",2);
-        opcodes.put("XOR",2);   opcodes_tail.put("XOR",3);
-        opcodes.put("xor",2);   opcodes_tail.put("xor",3);
+        opcodes.put("AND",311102);   opcodes_tail.put("AND",0);   
+        opcodes.put("and",311102);   opcodes_tail.put("and",0);
+        opcodes.put("OR",311102);    opcodes_tail.put("OR",1);
+        opcodes.put("or",311102);    opcodes_tail.put("or",1);
+        opcodes.put("NOT",210102);   opcodes_tail.put("NOT",2);
+        opcodes.put("not",210102);   opcodes_tail.put("not",2);
+        opcodes.put("XOR",311102);   opcodes_tail.put("XOR",3);
+        opcodes.put("xor",311102);   opcodes_tail.put("xor",3);
         
         // Shift instructions
         
-        opcodes.put("SHIFTL",3);   opcodes_tail.put("SHIFTL",0);
-        opcodes.put("SHIFTR",3);   opcodes_tail.put("SHIFTR",1);
+        opcodes.put("SHIFTL",21013);   opcodes_tail.put("SHIFTL",0);
+        opcodes.put("SHIFTR",21013);   opcodes_tail.put("SHIFTR",1);
         
         //MOVE Instruction
-        opcodes.put("MOV",4);
+        opcodes.put("MOV",20114);
         
-        opcodes.put("ADDI",5);
-        opcodes.put("SUBI",6);
-        opcodes.put("MVIH",8);
-        opcodes.put("MVIH",9);
-        opcodes.put("LDIDR",10);
-        opcodes.put("STIDR",11);
+        opcodes.put("ADDI",311205);
+        opcodes.put("SUBI",311206);
+        opcodes.put("MVIH",201308);
+        opcodes.put("MVIH",201309);
+        opcodes.put("LDIDR",311210);
+        opcodes.put("STIDR",311211);
         opcodes.put("STC",12);
         
-        opcodes.put("PUSH",16);
-        opcodes.put("JAL",17);
-        opcodes.put("CALL",18);
-        opcodes.put("POP",19);
-        opcodes.put("RET",20);
+        opcodes.put("PUSH",100116);
+        opcodes.put("JAL",100417);
+        opcodes.put("CALL",101018);
+        opcodes.put("POP",100119);  //opcodes_tail.put("POP",1);
+        opcodes.put("RET",20);      opcodes_tail.put("RET",1);
         opcodes.put("IE",21);
         opcodes.put("ID",22);
-        opcodes.put("JMP",23);
-        opcodes.put("JMPI",24);
-        opcodes.put("JGEO",25);
-        opcodes.put("JLEO",26);
-        opcodes.put("JCO",27);
-        opcodes.put("RST",28);
-        opcodes.put("HLT",29);
+        opcodes.put("JMP",100423);
+        opcodes.put("JMPI",210224);
+        opcodes.put("JGEO",311225);
+        opcodes.put("JLEO",311226);
+        opcodes.put("JCO",300227);
+        opcodes.put("JEO",311228);
+        opcodes.put("HLT",29);  opcodes_tail.put("HLT",0);
         opcodes.put("NOP",30);
-        opcodes.put("MOVSP",31);
-        opcodes.put("LDIDX",13);
-        opcodes.put("STIDX",14);
-        
+        opcodes.put("MOVSP",110031);
+        opcodes.put("LDIDX",311113);
+        opcodes.put("STIDX",311114);
+        opcodes.put("RST",29);  opcodes_tail.put("RST",1);
         
         
     }
