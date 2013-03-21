@@ -4,6 +4,7 @@
  */
 package fyp.mips16.graphics;
 
+import fyp.mips16.core.InstructionDecoder;
 import fyp.mips16.core.MemoryMapper;
 
 /**
@@ -16,9 +17,18 @@ public class MIPS16Window extends javax.swing.JFrame {
      * Creates new form MIPS16Window
      */
     MemoryMapper mm;
+    InstructionDecoder dec;
     public MIPS16Window() {
         initComponents();
         mm=new MemoryMapper("D:/","testout.asm");
+        dec=new InstructionDecoder();
+        //System.out.println(dec.DecodeLine("SBB r1,r2,r3"));
+        //System.out.println(dec.DecodeLine("ADC r1,r2,r3"));
+        //System.out.println(dec.DecodeLine("POP r1"));
+        //System.out.println(dec.DecodeLine("Addi r5,r6,#0x1F"));
+        System.out.println(dec.DecodeLine("MVIH r0,#255"));
+        
+        
     }
 
     /**
