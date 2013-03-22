@@ -56,7 +56,7 @@ public class MyMap {
         opcodes.put("ADDI",311205);
         opcodes.put("SUBI",311206);
         opcodes.put("MVIH",201308);
-        opcodes.put("MVIH",201309);
+        opcodes.put("MVIL",201309);
         opcodes.put("LDIDR",311210);
         opcodes.put("STIDR",311211);
         opcodes.put("STC",12);

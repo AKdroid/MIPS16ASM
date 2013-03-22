@@ -6,6 +6,11 @@ package fyp.mips16.graphics;
 
 import fyp.mips16.core.InstructionDecoder;
 import fyp.mips16.core.MemoryMapper;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -18,17 +23,30 @@ public class MIPS16Window extends javax.swing.JFrame {
      */
     MemoryMapper mm;
     InstructionDecoder dec;
+    int startaddress;
+    boolean errorflag;
+    File configfile,outfile;
+    String directory,filename;
+    FileWriter  fout;
     public MIPS16Window() {
         initComponents();
-        mm=new MemoryMapper("D:/","testout.asm");
+        directory="D:/";
+        filename="testout";
+        mm=new MemoryMapper(directory,filename);
         dec=new InstructionDecoder();
+        outfile=new File(directory,filename+".asm");
+        try {
+            fout=new FileWriter(outfile);
+        } catch (IOException ex) {
+            Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
+        }
         //System.out.println(dec.DecodeLine("SBB r1,r2,r3"));
         //System.out.println(dec.DecodeLine("ADC r1,r2,r3"));
         //System.out.println(dec.DecodeLine("POP r1"));
         //System.out.println(dec.DecodeLine("Addi r5,r6,#0x1F"));
         System.out.println(dec.DecodeLine("MVIH r0,#255"));
-        
-        
+        startaddress=0;
+        errorflag=false;
     }
 
     /**
@@ -42,7 +60,7 @@ public class MIPS16Window extends javax.swing.JFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         editorarea = new javax.swing.JTextArea();
-        jButton1 = new javax.swing.JButton();
+        assemblebut = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -57,7 +75,7 @@ public class MIPS16Window extends javax.swing.JFrame {
         readbutton = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         jLabel6 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        startaddrfield = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         jSeparator3 = new javax.swing.JSeparator();
         jLabel9 = new javax.swing.JLabel();
@@ -69,8 +87,8 @@ public class MIPS16Window extends javax.swing.JFrame {
         jTextField3 = new javax.swing.JTextField();
         jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        Exitbutton = new javax.swing.JButton();
+        clearbuttton = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JSeparator();
         jLabel17 = new javax.swing.JLabel();
         MessageLabel = new javax.swing.JLabel();
@@ -82,7 +100,12 @@ public class MIPS16Window extends javax.swing.JFrame {
         editorarea.setRows(5);
         jScrollPane1.setViewportView(editorarea);
 
-        jButton1.setText("Commit");
+        assemblebut.setText("Assemble");
+        assemblebut.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                assemblebutMouseClicked(evt);
+            }
+        });
 
         jLabel1.setText("Memory Editor");
 
@@ -109,6 +132,11 @@ public class MIPS16Window extends javax.swing.JFrame {
         readvalue.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         writebutton.setText("Write");
+        writebutton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                writebuttonMouseClicked(evt);
+            }
+        });
         writebutton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 writebuttonActionPerformed(evt);
@@ -116,10 +144,15 @@ public class MIPS16Window extends javax.swing.JFrame {
         });
 
         readbutton.setText("Read");
+        readbutton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                readbuttonMouseClicked(evt);
+            }
+        });
 
         jLabel6.setText("Starting Address :");
 
-        jTextField1.setText("0");
+        startaddrfield.setText("0");
 
         jLabel7.setText("Code Editor");
 
@@ -142,9 +175,19 @@ public class MIPS16Window extends javax.swing.JFrame {
 
         jLabel16.setText(".asm");
 
-        jButton2.setText("Exit");
+        Exitbutton.setText("Exit");
+        Exitbutton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ExitbuttonMouseClicked(evt);
+            }
+        });
 
-        jButton3.setText("Clear");
+        clearbuttton.setText("Clear");
+        clearbuttton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                clearbutttonMouseClicked(evt);
+            }
+        });
 
         jLabel17.setText("Output");
 
@@ -201,18 +244,14 @@ public class MIPS16Window extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(481, 481, 481)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel15)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel6)
-                                    .addComponent(jLabel9)
-                                    .addComponent(jLabel11))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                            .addComponent(jLabel15)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel9)
+                            .addComponent(jLabel11))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(startaddrfield, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jLabel14)
                                 .addGap(35, 35, 35))
@@ -232,11 +271,11 @@ public class MIPS16Window extends javax.swing.JFrame {
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 442, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jButton3)
+                                .addComponent(assemblebut, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(clearbuttton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(Exitbutton, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(31, 31, 31)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jSeparator4)
@@ -247,7 +286,7 @@ public class MIPS16Window extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jButton1, jButton2, jButton3});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {Exitbutton, clearbuttton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -279,7 +318,7 @@ public class MIPS16Window extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(startaddrfield, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel14))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -307,13 +346,13 @@ public class MIPS16Window extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 396, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(31, 31, 31)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3))
+                    .addComponent(assemblebut)
+                    .addComponent(Exitbutton)
+                    .addComponent(clearbuttton))
                 .addGap(24, 24, 24))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jButton1, jButton2, jButton3});
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {Exitbutton, assemblebut, clearbuttton});
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -325,6 +364,97 @@ public class MIPS16Window extends javax.swing.JFrame {
     private void readaddressActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readaddressActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_readaddressActionPerformed
+
+    private void ExitbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitbuttonMouseClicked
+        // TODO add your handling code here:
+        System.exit(0);
+    }//GEN-LAST:event_ExitbuttonMouseClicked
+
+    private void assemblebutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_assemblebutMouseClicked
+        // TODO add your handling code here:
+        String lines[],addval[];
+        int i,val=-2,ProgramCounter;
+        String editorcontent;
+        startaddress=dec.NumberParser(startaddrfield.getText());
+        
+        errorflag=false;
+        if(startaddress==-100000){
+            startaddress =0;
+            startaddrfield.setText(""+0);
+        }
+        ProgramCounter=startaddress;
+        System.out.println("PC="+ProgramCounter);
+        editorcontent=editorarea.getText();
+        lines=editorcontent.split("\n");
+        for(i=0;i<lines.length;i++){
+            System.out.println(lines[i]);
+            if(lines[i].contains(":")){
+                addval=lines[i].split(":");
+                //System.out.println("addval "+addval[0]+" "+addval[1] );
+                //System.out.println("addval"+dec.NumberParser(addval[0])+" "+dec.NumberParser(addval[1]));
+                if(addval.length == 2 && dec.NumberParser(addval[0])!=-100000&&dec.NumberParser(addval[1])!=-100000){
+                    mm.writeMemory(dec.NumberParser(addval[0])%65536, (dec.NumberParser(addval[1])%256));
+                }else{
+                    errorflag=true;
+                }
+            }
+            else{
+            val=dec.DecodeLine(lines[i]);
+            if(val<-1)
+                errorflag=true;
+            else if(val==-1)
+                continue;
+            else{
+                mm.writeMemory(ProgramCounter, (val%256));
+                mm.writeMemory(ProgramCounter+1, (val/256));
+                ProgramCounter+=2;
+             
+            }
+            }
+        }
+        if(errorflag==false)
+            mm.dump();  
+        try {
+            System.out.println(editorcontent);
+            fout=new FileWriter(outfile);
+            for(i=0;i<lines.length;i++){
+            fout.write(lines[i]);
+            fout.write("\r\n");
+            }
+            fout.close();
+        } catch (IOException ex) {
+            Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_assemblebutMouseClicked
+
+    private void writebuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_writebuttonMouseClicked
+        // TODO add your handling code here:
+        String address=writeaddress.getText();
+        int addr=dec.NumberParser(address);
+        int val=dec.NumberParser(writevalue.getText());
+        if(addr != -100000 && val!= -100000){
+            mm.writeMemory(addr, val%256);
+            writeaddress.setText(""+addr%65536);
+        }else{
+            writeaddress.setText("0");
+            writevalue.setText("0");
+        }
+            
+    }//GEN-LAST:event_writebuttonMouseClicked
+
+    private void readbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_readbuttonMouseClicked
+        // TODO add your handling code here:
+        int address=dec.NumberParser(readaddress.getText());
+        if(address!=-100000){
+            readvalue.setText(""+mm.readMemory(address));
+            readaddress.setText(""+address%65536);
+        }
+    }//GEN-LAST:event_readbuttonMouseClicked
+
+    private void clearbutttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_clearbutttonMouseClicked
+        // TODO add your handling code here:
+        editorarea.setText("");
+    }//GEN-LAST:event_clearbutttonMouseClicked
 
     /**
      * @param args the command line arguments
@@ -372,12 +502,12 @@ public class MIPS16Window extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Exitbutton;
     private javax.swing.JLabel MessageLabel;
     private javax.swing.JButton Openbutton;
+    private javax.swing.JButton assemblebut;
+    private javax.swing.JButton clearbuttton;
     private javax.swing.JTextArea editorarea;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -397,12 +527,12 @@ public class MIPS16Window extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
     private javax.swing.JTextField readaddress;
     private javax.swing.JButton readbutton;
     private javax.swing.JLabel readvalue;
+    private javax.swing.JTextField startaddrfield;
     private javax.swing.JTextField writeaddress;
     private javax.swing.JButton writebutton;
     private javax.swing.JTextField writevalue;
