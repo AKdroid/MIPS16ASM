@@ -9,6 +9,7 @@ import fyp.mips16.core.MemoryMapper;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import fyp.mips16.core.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,18 +29,22 @@ public class MIPS16Window extends javax.swing.JFrame {
     File configfile,outfile;
     String directory,filename;
     FileWriter  fout;
+    ErrorManager em;
+    
     public MIPS16Window() {
         initComponents();
         directory="D:/";
         filename="testout";
         mm=new MemoryMapper(directory,filename);
-        dec=new InstructionDecoder();
+        em=new ErrorManager();
+        dec=new InstructionDecoder(em);
         outfile=new File(directory,filename+".asm");
         try {
             fout=new FileWriter(outfile);
         } catch (IOException ex) {
             Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
         //System.out.println(dec.DecodeLine("SBB r1,r2,r3"));
         //System.out.println(dec.DecodeLine("ADC r1,r2,r3"));
         //System.out.println(dec.DecodeLine("POP r1"));
@@ -373,7 +378,7 @@ public class MIPS16Window extends javax.swing.JFrame {
     private void assemblebutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_assemblebutMouseClicked
         // TODO add your handling code here:
         String lines[],addval[];
-        int i,val=-2,ProgramCounter;
+        int i,val=-2,ProgramCounter,a,b;
         String editorcontent;
         startaddress=dec.NumberParser(startaddrfield.getText());
         
@@ -392,8 +397,11 @@ public class MIPS16Window extends javax.swing.JFrame {
                 addval=lines[i].split(":");
                 //System.out.println("addval "+addval[0]+" "+addval[1] );
                 //System.out.println("addval"+dec.NumberParser(addval[0])+" "+dec.NumberParser(addval[1]));
-                if(addval.length == 2 && dec.NumberParser(addval[0])!=-100000&&dec.NumberParser(addval[1])!=-100000){
-                    mm.writeMemory(dec.NumberParser(addval[0])%65536, (dec.NumberParser(addval[1])%256));
+                a=dec.NumberParser(addval[0]);
+                b=dec.NumberParser(addval[1]);
+                if(addval.length == 2 && a!=-100000&&b!=-100000){
+                    
+                    mm.writeMemory(a%65536, b%256);
                 }else{
                     errorflag=true;
                 }

@@ -14,8 +14,10 @@ import java.text.ParsePosition;
 public class InstructionDecoder {
  
     MyMap m;
-    public InstructionDecoder(){
+    ErrorManager em; 
+    public InstructionDecoder(ErrorManager _em){
         m=new MyMap();
+        em= _em;
     }
     public int DecodeLine(String ln){
             
