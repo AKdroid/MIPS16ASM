@@ -13,6 +13,11 @@ import fyp.mips16.core.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import fyp.mips16.core.Error;
+import java.awt.Toolkit;
+import java.awt.event.WindowEvent;
+import java.io.*;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,19 +34,53 @@ public class MIPS16Window extends javax.swing.JFrame {
     InstructionDecoder dec;
     int startaddress;
     boolean errorflag;
-    File configfile,outfile;
+    File configfile,outfile,logfile;
     String directory,filename,statustext="";
     FileWriter  fout;
     public static ErrorManager em;
     Map <Integer,Integer> memorywrites;
+    Character buffer[];
+    
     public MIPS16Window() {
         initComponents();
         directory="D:/";
         filename="testout";
-        mm=new MemoryMapper(directory,filename);
+        startaddress=0;
         em=new ErrorManager();
         dec=new InstructionDecoder();
+        
+        configfile=new File("config.txt");
+        if(!configfile.exists())
+            try {
+            configfile.createNewFile();
+        } catch (IOException ex) {
+            Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            FileReader fr=new FileReader(configfile);
+            BufferedReader br=new BufferedReader(fr);
+            String s=" ";
+            s=br.readLine();
+            if(s != null)
+                startaddress=Integer.parseInt(s);
+            s=br.readLine();
+            if(s!=null )
+                directory=s;
+            s=br.readLine();
+            if(s!=null){
+                filename=s;               
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException e){
+            
+        }
+        mm=new MemoryMapper(directory,filename);
         outfile=new File(directory,filename+".asm");
+        outfileName.setText(filename);
+        OutFileDirectory.setText(directory);
+        startaddrfield.setText(""+startaddress);
+        logfile=new File(directory,filename+".log");
         try {
             fout=new FileWriter(outfile);
         } catch (IOException ex) {
@@ -52,7 +91,6 @@ public class MIPS16Window extends javax.swing.JFrame {
         //System.out.println(dec.DecodeLine("ADC r1,r2,r3"));
         //System.out.println(dec.DecodeLine("POP r1"));
         //System.out.println(dec.DecodeLine("Addi r5,r6,#0x1F"));
-        startaddress=0;
         errorflag=false;
     }
 
@@ -90,8 +128,8 @@ public class MIPS16Window extends javax.swing.JFrame {
         jLabel12 = new javax.swing.JLabel();
         Openbutton = new javax.swing.JButton();
         jLabel14 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
+        OutFileDirectory = new javax.swing.JTextField();
+        outfileName = new javax.swing.JTextField();
         jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
         Exitbutton = new javax.swing.JButton();
@@ -103,6 +141,11 @@ public class MIPS16Window extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("MIPS 16 Assembler");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         editorarea.setColumns(20);
         editorarea.setRows(5);
@@ -175,9 +218,9 @@ public class MIPS16Window extends javax.swing.JFrame {
 
         jLabel14.setText("(0 - 65535) ");
 
-        jTextField2.setText("D:/");
+        OutFileDirectory.setText("D:/");
 
-        jTextField3.setText("testout");
+        outfileName.setText("testout");
 
         jLabel15.setText("Output Filename :");
 
@@ -266,13 +309,13 @@ public class MIPS16Window extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jLabel14)
                                 .addGap(35, 35, 35))
-                            .addComponent(jTextField2)
+                            .addComponent(OutFileDirectory)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
                                 .addGap(47, 47, 47)
                                 .addComponent(Openbutton))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(outfileName, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel16))))
                     .addGroup(layout.createSequentialGroup()
@@ -334,10 +377,10 @@ public class MIPS16Window extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel9)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(OutFileDirectory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(outfileName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel15)
                     .addComponent(jLabel16))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -378,6 +421,7 @@ public class MIPS16Window extends javax.swing.JFrame {
 
     private void ExitbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitbuttonMouseClicked
         // TODO add your handling code here:
+        dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         System.exit(0);
     }//GEN-LAST:event_ExitbuttonMouseClicked
 
@@ -388,6 +432,14 @@ public class MIPS16Window extends javax.swing.JFrame {
         memorywrites=new HashMap<Integer,Integer>();
         int i,val=-2,ProgramCounter,a,b;
         String editorcontent;
+        //String temp
+        directory=OutFileDirectory.getText();
+        File tempfile=new File(directory);
+        if(!tempfile.isDirectory())
+            tempfile.mkdirs();
+        filename=outfileName.getText();
+        mm.setDumpfile(directory, filename);
+        outfile=new File(directory,filename+".txt");
         em.clear();
         startaddress=dec.NumberParser(startaddrfield.getText());
         
@@ -452,15 +504,15 @@ public class MIPS16Window extends javax.swing.JFrame {
             }
         }
         if(errorflag==false){
-            statustext+="\n";
-            statustext+="0 Errors "+em.wrncnt+" Warnings;\n"; 
+            statustext+="\r\n";
+            statustext+="0 Errors "+em.wrncnt+" Warnings;\r\r\n"; 
             statustext+=new Error(0,0,ErrorManager.MESSAGE_GENERATING_DUMP,mm.dumpFile.getAbsolutePath())+"\r\n";
             MessageLabel.setText(statustext);
             mm.dump(); 
             
         }
         try {
-            statustext+="\n";
+            statustext+="\r\n";
             //System.out.println(editorcontent);
             statustext+=new Error(0,0,ErrorManager.MESSAGE_SAVING_ASM,outfile.getAbsolutePath());
             statustext+="\r\n";
@@ -470,7 +522,7 @@ public class MIPS16Window extends javax.swing.JFrame {
             else{
                statustext+=""+em.errcnt+" Errors "+em.wrncnt+" Warnings;\r\n";
                for(i=0;i<em.messagequeue.size();i++){
-                   statustext+=em.messagequeue.get(i)+"\n";
+                   statustext+=em.messagequeue.get(i)+"\r\n";
                }
                statustext+=new Error(0,0,ErrorManager.MESSAGE_ASSEMBLING_FAILED,"");
                
@@ -482,6 +534,15 @@ public class MIPS16Window extends javax.swing.JFrame {
             fout.write("\r\n");
             }
             fout.close();
+        } catch (IOException ex) {
+            Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            FileWriter logwriter=new FileWriter(logfile);
+            Date dt=new Date();
+            logwriter.write(new Timestamp(dt.getTime()).toString()+"\r\n");
+            logwriter.write(statustext);
+            logwriter.close();
         } catch (IOException ex) {
             Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -515,6 +576,20 @@ public class MIPS16Window extends javax.swing.JFrame {
         // TODO add your handling code here:
         editorarea.setText("");
     }//GEN-LAST:event_clearbutttonMouseClicked
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+        System.out.println("closing");
+        try {
+            FileWriter configwriter=new FileWriter(configfile);
+            configwriter.write(startaddress+"\r\n");
+            configwriter.write(directory+"\r\n");
+            configwriter.write(filename+"\r\n");
+            configwriter.close();
+        } catch (IOException ex) {
+            Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments
@@ -565,6 +640,7 @@ public class MIPS16Window extends javax.swing.JFrame {
     private javax.swing.JButton Exitbutton;
     private javax.swing.JTextArea MessageLabel;
     private javax.swing.JButton Openbutton;
+    private javax.swing.JTextField OutFileDirectory;
     private javax.swing.JButton assemblebut;
     private javax.swing.JButton clearbuttton;
     private javax.swing.JTextArea editorarea;
@@ -588,8 +664,7 @@ public class MIPS16Window extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
+    private javax.swing.JTextField outfileName;
     private javax.swing.JTextField readaddress;
     private javax.swing.JButton readbutton;
     private javax.swing.JLabel readvalue;
