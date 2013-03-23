@@ -4,6 +4,7 @@
  */
 package fyp.mips16.core;
 
+import fyp.mips16.graphics.MIPS16Window;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 
@@ -14,12 +15,12 @@ import java.text.ParsePosition;
 public class InstructionDecoder {
  
     MyMap m;
-    ErrorManager em; 
-    public InstructionDecoder(ErrorManager _em){
+    
+    public InstructionDecoder(){
         m=new MyMap();
-        em= _em;
+        
     }
-    public int DecodeLine(String ln){
+    public int DecodeLine(String ln,int lnno){
             
         String temp,opcde;
         String operands[]=new String[1];
@@ -68,19 +69,27 @@ public class InstructionDecoder {
             }
             i=p=0;
             if(NumOp==0)return x;
-            //System.out.println("values= "+NumOp+" "+op[0]+" "+op[1]+" "+op[2]);
-            if(NumOp>operands.length)
-                return -3;
-            if(NumOp<operands.length)
-                return -4;
+            System.out.println("values= "+NumOp+" "+operands.length);
+            if(NumOp>operands.length){
+                MIPS16Window.em.add_message(2,lnno , ErrorManager.LESS_OPERANDS, "opcode="+opcde+" required="+NumOp+" provided="+operands.length);
+                return ErrorManager.LESS_OPERANDS;
+            }
+                
+            if(NumOp<operands.length){
+                MIPS16Window.em.add_message(2,lnno , ErrorManager.MORE_OPERANDS, "opcode="+opcde+" required="+NumOp+" provided="+operands.length);
+                return ErrorManager.MORE_OPERANDS;
+            }
+                
             while(NumOp>0 && i<3){
                 
                 if(op[i]==1){
                     NumOp--;
                     if(m.registers.containsKey(operands[p]))
                         x+=m.registers.get(operands[p])*Math.pow(2, 8-3*i);
-                    else 
-                        return -7;
+                    else{
+                        MIPS16Window.em.add_message(2, lnno, ErrorManager.UNKNOWN_IDENTIFIER, operands[p]);
+                        return ErrorManager.UNKNOWN_IDENTIFIER;
+                    }
                     p++;
                 }
                 
@@ -90,11 +99,20 @@ public class InstructionDecoder {
                     if(operands[p].charAt(0)=='#'){
                         temp=operands[p].substring(1);
                         value=NumberParser(temp);
-                        if(value==-100000)return -100000;
-                        else
-                        x+=value%32;    
+                        if(value==ErrorManager.INVALID_NUMERAL){
+                            MIPS16Window.em.add_message(2, lnno,ErrorManager.INVALID_NUMERAL ,operands[p]);
+                            return ErrorManager.INVALID_NUMERAL;
+                        }
+                        else{
+                            if(value>32){
+                                MIPS16Window.em.add_message(1,i+1,ErrorManager.NUMERAL_OVERFLOW,operands[p]);
+                            }
+                        if(value<0)value=32+value%17;    
+                        x+=value%32; 
+                        }   
                     }else{
-                        return -5;
+                        MIPS16Window.em.add_message(2, lnno, ErrorManager.INVALID_IMMEDIATE, operands[p]);
+                        return ErrorManager.INVALID_IMMEDIATE;
                     }
                     p++;
                 }else if(op[i]==3&&i==2){
@@ -104,13 +122,21 @@ public class InstructionDecoder {
                         temp=operands[p].substring(1);
                         value=NumberParser(temp);
                         
-                        if(value==-100000)return -100000;
+                        if(value==ErrorManager.INVALID_NUMERAL){
+                            MIPS16Window.em.add_message(2, lnno,ErrorManager.INVALID_NUMERAL ,operands[p]);
+                            return ErrorManager.INVALID_NUMERAL;
+                        }
                         else{
+                        if(value>255){
+                                MIPS16Window.em.add_message(1,i+1,ErrorManager.NUMERAL_OVERFLOW,operands[p]);
+                            } 
+                        if(value<0)value=256+value%129;
                         x+=value%32;
                         x+=((value/32)*256);
                         }    
                     }else{
-                        return -5;
+                        MIPS16Window.em.add_message(2, lnno, ErrorManager.INVALID_IMMEDIATE, operands[p]);   
+                        return ErrorManager.INVALID_IMMEDIATE;
                     }
                     p++;
                 }
@@ -120,11 +146,21 @@ public class InstructionDecoder {
                     if(operands[p].charAt(0)=='#'){
                         temp=operands[p].substring(1);
                         value=NumberParser(temp);
-                        if(value==-100000)return -100000;
-                        else
-                        x+=value%2048;    
+                        if(value==ErrorManager.INVALID_NUMERAL)
+                        {
+                            MIPS16Window.em.add_message(2, lnno,ErrorManager.INVALID_NUMERAL ,operands[p]);
+                            return ErrorManager.INVALID_NUMERAL;
+                        }
+                        else{
+                            if(value>2047){
+                                MIPS16Window.em.add_message(1,i+1,ErrorManager.NUMERAL_OVERFLOW,operands[p]);
+                            }
+                        if(value<0)value=2048+value%1025;    
+                        x+=value%2048;
+                        }
                     }else{
-                        return -5;
+                        MIPS16Window.em.add_message(2, lnno, ErrorManager.INVALID_IMMEDIATE, operands[p]); 
+                        return ErrorManager.INVALID_IMMEDIATE;
                     }
                     p++;
                 }
@@ -133,7 +169,8 @@ public class InstructionDecoder {
             
             
         }else{
-            return -2;
+            MIPS16Window.em.add_message(2,lnno , ErrorManager.INVALID_OPCODE, opcde);
+            return ErrorManager.INVALID_OPCODE;
         }
         
         
@@ -156,7 +193,7 @@ public class InstructionDecoder {
                  try{
                     x=Integer.parseInt(str,10);
                 }catch (NumberFormatException e){
-                        return -100000;
+                        return ErrorManager.INVALID_NUMERAL;
                 }
               
         }
@@ -167,25 +204,26 @@ public class InstructionDecoder {
                 x=Integer.parseInt(temp,16);
             }catch (NumberFormatException e){
                      //  System.out.println("Temp="+temp); 
-                       return -100000;
+                       return ErrorManager.INVALID_NUMERAL;
             }
             }else if(temp.equals("0b")){
                      temp=str.substring(2);
                      try{
                        x=Integer.parseInt(temp,2);
                      }catch (NumberFormatException e){
-                         return -100000;
+                         return ErrorManager.INVALID_NUMERAL;
                      }
              }else if(temp.equals("0d")){
                 temp=str.substring(2);
                 try{
                     x=Integer.parseInt(temp,10);
                 }catch (NumberFormatException e){
-                        return -100000;
+                        return ErrorManager.INVALID_NUMERAL;
                 }
                 }
              
-             else return -100000;  
+             else return ErrorManager.INVALID_NUMERAL; 
+             
         return x;
     }
 }

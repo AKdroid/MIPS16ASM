@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class MemoryMapper {
     
     private int  memnc[];//,memc[];
-    File infile,dumpFile;
+    public File infile,dumpFile;
     FileInputStream fin;
     FileWriter dumpout;
     

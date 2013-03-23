@@ -30,13 +30,14 @@ public class Error {
      public String toString(){
          String x="";
          if(type==0)
-             x="Message:";
+             x="Info:";
          else if(type==1)
              x="Warning:";
          else if(type==2)
              x="Error:";
+         if(LineNo>0)
          x+="Line "+LineNo;
-         x+=message+" "+extras;
+         x+=" "+message+" "+extras;
          return x;
      }
     

@@ -4,6 +4,7 @@
  */
 package fyp.mips16.core;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,9 +34,12 @@ public class ErrorManager {
     
     
     public Map<Integer,String> ErrMessages;
+    public ArrayList<Error> messagequeue;
+    public int errcnt=0,wrncnt=0;
     
     public ErrorManager(){
         ErrMessages=new HashMap<Integer,String>();
+        messagequeue=new ArrayList<Error>();
         // Error Messages
         ErrMessages.put(INVALID_OPCODE, "Unknown Opcode");
         ErrMessages.put(LESS_OPERANDS, "Opcode requires more operands");
@@ -52,6 +56,16 @@ public class ErrorManager {
         ErrMessages.put(MESSAGE_GENERATING_DUMP,"Generating memory map dump file ");
         ErrMessages.put(MESSAGE_SAVING_ASM,"Saving the assembly code ");
         ErrMessages.put(MESSAGE_SUCCESS,"Assembly Successful");
+    }
+    public void add_message(int type,int Line_no,int error_code,String extras){
+        if(type==1)wrncnt++;
+        if(type==2)errcnt++;
+        messagequeue.add(new Error(type,Line_no,error_code,extras));
+    }
+    public void clear(){
+        wrncnt=0;
+        errcnt=0;
+        messagequeue.clear();
     }
 
     

@@ -47,11 +47,11 @@ public class MyMap {
         
         // Shift instructions
         
-        opcodes.put("SHIFTL",21013);   opcodes_tail.put("SHIFTL",0);
-        opcodes.put("SHIFTR",21013);   opcodes_tail.put("SHIFTR",1);
+        opcodes.put("SHIFTL",210103);   opcodes_tail.put("SHIFTL",0);
+        opcodes.put("SHIFTR",210103);   opcodes_tail.put("SHIFTR",1);
         
         //MOVE Instruction
-        opcodes.put("MOV",20114);
+        opcodes.put("MOV",201104);
         
         opcodes.put("ADDI",311205);
         opcodes.put("SUBI",311206);

@@ -12,6 +12,9 @@ import java.io.IOException;
 import fyp.mips16.core.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import fyp.mips16.core.Error;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -27,17 +30,17 @@ public class MIPS16Window extends javax.swing.JFrame {
     int startaddress;
     boolean errorflag;
     File configfile,outfile;
-    String directory,filename;
+    String directory,filename,statustext="";
     FileWriter  fout;
-    ErrorManager em;
-    
+    public static ErrorManager em;
+    Map <Integer,Integer> memorywrites;
     public MIPS16Window() {
         initComponents();
         directory="D:/";
         filename="testout";
         mm=new MemoryMapper(directory,filename);
         em=new ErrorManager();
-        dec=new InstructionDecoder(em);
+        dec=new InstructionDecoder();
         outfile=new File(directory,filename+".asm");
         try {
             fout=new FileWriter(outfile);
@@ -49,7 +52,6 @@ public class MIPS16Window extends javax.swing.JFrame {
         //System.out.println(dec.DecodeLine("ADC r1,r2,r3"));
         //System.out.println(dec.DecodeLine("POP r1"));
         //System.out.println(dec.DecodeLine("Addi r5,r6,#0x1F"));
-        System.out.println(dec.DecodeLine("MVIH r0,#255"));
         startaddress=0;
         errorflag=false;
     }
@@ -96,7 +98,8 @@ public class MIPS16Window extends javax.swing.JFrame {
         clearbuttton = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JSeparator();
         jLabel17 = new javax.swing.JLabel();
-        MessageLabel = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        MessageLabel = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("MIPS 16 Assembler");
@@ -196,8 +199,11 @@ public class MIPS16Window extends javax.swing.JFrame {
 
         jLabel17.setText("Output");
 
-        MessageLabel.setText("MIPS 16");
-        MessageLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        MessageLabel.setColumns(20);
+        MessageLabel.setForeground(new java.awt.Color(255, 0, 0));
+        MessageLabel.setLineWrap(true);
+        MessageLabel.setRows(5);
+        jScrollPane2.setViewportView(MessageLabel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -287,7 +293,7 @@ public class MIPS16Window extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel17)
                                 .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(MessageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(jScrollPane2))))
                 .addContainerGap())
         );
 
@@ -295,7 +301,7 @@ public class MIPS16Window extends javax.swing.JFrame {
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addGap(30, 30, 30)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -343,8 +349,8 @@ public class MIPS16Window extends javax.swing.JFrame {
                 .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel17)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(MessageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(39, Short.MAX_VALUE)
@@ -378,8 +384,11 @@ public class MIPS16Window extends javax.swing.JFrame {
     private void assemblebutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_assemblebutMouseClicked
         // TODO add your handling code here:
         String lines[],addval[];
+        statustext="";
+        memorywrites=new HashMap<Integer,Integer>();
         int i,val=-2,ProgramCounter,a,b;
         String editorcontent;
+        em.clear();
         startaddress=dec.NumberParser(startaddrfield.getText());
         
         errorflag=false;
@@ -391,39 +400,82 @@ public class MIPS16Window extends javax.swing.JFrame {
         System.out.println("PC="+ProgramCounter);
         editorcontent=editorarea.getText();
         lines=editorcontent.split("\n");
+        if(lines.length>0){
+            Error x=new Error(0,-1,ErrorManager.MESSAGE_ASSEMBLING,outfile.getAbsolutePath());
+            statustext=x.toString();
+            MessageLabel.setText(statustext);
+            
+        }
         for(i=0;i<lines.length;i++){
             System.out.println(lines[i]);
-            if(lines[i].contains(":")){
-                addval=lines[i].split(":");
+            if(lines[i].contains("=")){
+                addval=lines[i].split("=");
                 //System.out.println("addval "+addval[0]+" "+addval[1] );
                 //System.out.println("addval"+dec.NumberParser(addval[0])+" "+dec.NumberParser(addval[1]));
                 a=dec.NumberParser(addval[0]);
                 b=dec.NumberParser(addval[1]);
-                if(addval.length == 2 && a!=-100000&&b!=-100000){
-                    
+                if(addval.length == 2 && a!=ErrorManager.INVALID_NUMERAL&&b!=ErrorManager.INVALID_NUMERAL){
+                    memorywrites.put(a%65536,a);
+                    if(a%65536>= startaddress && a%65536 <= ProgramCounter)
+                        em.add_message(1,i+1,ErrorManager.MEMORY_CODE_OVERLAP,""+ProgramCounter+":"+ProgramCounter+1);
+                    if(a>65535)
+                        em.add_message(1,i+1,ErrorManager.NUMERAL_OVERFLOW,addval[0]);
+                    if(b>255)
+                        em.add_message(1,i+1,ErrorManager.NUMERAL_OVERFLOW,addval[1]);
                     mm.writeMemory(a%65536, b%256);
                 }else{
+                    if(addval.length!=2)
+                        em.add_message(2, i+1, ErrorManager.UNKNOWN_IDENTIFIER, lines[i]);
+                    if(a==ErrorManager.INVALID_NUMERAL)
+                        em.add_message(2, i+1, ErrorManager.INVALID_NUMERAL, addval[0]);
+                    if(b==ErrorManager.INVALID_NUMERAL)
+                        em.add_message(2, i+1, ErrorManager.INVALID_NUMERAL, addval[1]);
                     errorflag=true;
                 }
             }
             else{
-            val=dec.DecodeLine(lines[i]);
-            if(val<-1)
+            val=dec.DecodeLine(lines[i],i+1);
+            if(val<-1){
                 errorflag=true;
+                
+            }
             else if(val==-1)
                 continue;
             else{
+                if(memorywrites.containsKey(ProgramCounter)||memorywrites.containsKey(ProgramCounter+1))
+                    em.add_message(1,i+1,ErrorManager.MEMORY_CODE_OVERLAP,""+ProgramCounter+":"+ProgramCounter+1);
                 mm.writeMemory(ProgramCounter, (val%256));
                 mm.writeMemory(ProgramCounter+1, (val/256));
                 ProgramCounter+=2;
-             
+                
             }
             }
         }
-        if(errorflag==false)
-            mm.dump();  
+        if(errorflag==false){
+            statustext+="\n";
+            statustext+="0 Errors "+em.wrncnt+" Warnings;\n"; 
+            statustext+=new Error(0,0,ErrorManager.MESSAGE_GENERATING_DUMP,mm.dumpFile.getAbsolutePath())+"\r\n";
+            MessageLabel.setText(statustext);
+            mm.dump(); 
+            
+        }
         try {
-            System.out.println(editorcontent);
+            statustext+="\n";
+            //System.out.println(editorcontent);
+            statustext+=new Error(0,0,ErrorManager.MESSAGE_SAVING_ASM,outfile.getAbsolutePath());
+            statustext+="\r\n";
+            MessageLabel.setText(statustext);
+            if(errorflag==false)
+               statustext+=new Error(0,0,ErrorManager.MESSAGE_SUCCESS,""); 
+            else{
+               statustext+=""+em.errcnt+" Errors "+em.wrncnt+" Warnings;\r\n";
+               for(i=0;i<em.messagequeue.size();i++){
+                   statustext+=em.messagequeue.get(i)+"\n";
+               }
+               statustext+=new Error(0,0,ErrorManager.MESSAGE_ASSEMBLING_FAILED,"");
+               
+            } 
+            MessageLabel.setText(statustext);
             fout=new FileWriter(outfile);
             for(i=0;i<lines.length;i++){
             fout.write(lines[i]);
@@ -511,7 +563,7 @@ public class MIPS16Window extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Exitbutton;
-    private javax.swing.JLabel MessageLabel;
+    private javax.swing.JTextArea MessageLabel;
     private javax.swing.JButton Openbutton;
     private javax.swing.JButton assemblebut;
     private javax.swing.JButton clearbuttton;
@@ -531,6 +583,7 @@ public class MIPS16Window extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
