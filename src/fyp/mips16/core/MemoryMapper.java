@@ -28,11 +28,7 @@ public class MemoryMapper {
             memnc[i]=0;
         }
         dumpFile=new File(outputdir,filename+".mmap");
-        try {           
-            dumpout=new FileWriter(dumpFile);
-        } catch (IOException ex) {
-            Logger.getLogger(MemoryMapper.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        
         
     }
     
@@ -74,6 +70,36 @@ public class MemoryMapper {
         
     }
     public void setInfile(String directory,String filename){
-        infile=new File(directory,filename);
+        infile=new File(directory,filename+".mmap");
+        if(infile.exists()){
+        try {
+            FileReader fr=new FileReader(infile);
+            BufferedReader br=new BufferedReader(fr);
+            String s="",temp="";
+            while(temp!=null){
+                s+=temp;
+                temp=br.readLine();
+            }
+            s=s.trim();
+            String val[]=s.split(" ");
+            System.out.println(""+val.length);
+            if(val.length==65536)
+            for(int i=0;i<65536;i++){
+                memnc[i]=Integer.parseInt(val[i]);
+            }
+            else
+                clearmemory();
+            
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MemoryMapper.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MemoryMapper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        }
+    }
+    
+    public void clearmemory(){
+        for(int i=0;i<65536;i++)
+            memnc[i]=0;
     }
 }

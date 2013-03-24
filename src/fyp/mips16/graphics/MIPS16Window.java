@@ -20,6 +20,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JFileChooser;
 
 /**
  *
@@ -46,6 +47,7 @@ public class MIPS16Window extends javax.swing.JFrame {
         directory="D:/";
         filename="testout";
         startaddress=0;
+        setIconImage(Toolkit.getDefaultToolkit().createImage("mipsicon.png"));
         em=new ErrorManager();
         dec=new InstructionDecoder();
         
@@ -81,19 +83,33 @@ public class MIPS16Window extends javax.swing.JFrame {
         OutFileDirectory.setText(directory);
         startaddrfield.setText(""+startaddress);
         logfile=new File(directory,filename+".log");
-        try {
-            fout=new FileWriter(outfile);
-        } catch (IOException ex) {
-            Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
-        }
         
+        try {
+                FileReader fr=new FileReader(outfile);
+                BufferedReader br=new BufferedReader(fr);
+                String s="",temp="";
+                while(temp!=null){
+                    s+=temp+"\n";
+                    temp=br.readLine();                
+               }
+                System.out.println(s);
+               s=s.trim(); 
+               editorarea.setText(s);
+               
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            catch (IOException ex) {
+                Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            mm.setInfile(directory, filename);
         //System.out.println(dec.DecodeLine("SBB r1,r2,r3"));
         //System.out.println(dec.DecodeLine("ADC r1,r2,r3"));
         //System.out.println(dec.DecodeLine("POP r1"));
         //System.out.println(dec.DecodeLine("Addi r5,r6,#0x1F"));
         errorflag=false;
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -103,6 +119,7 @@ public class MIPS16Window extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        filechooser = new javax.swing.JFileChooser();
         jScrollPane1 = new javax.swing.JScrollPane();
         editorarea = new javax.swing.JTextArea();
         assemblebut = new javax.swing.JButton();
@@ -124,8 +141,6 @@ public class MIPS16Window extends javax.swing.JFrame {
         jLabel7 = new javax.swing.JLabel();
         jSeparator3 = new javax.swing.JSeparator();
         jLabel9 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
         Openbutton = new javax.swing.JButton();
         jLabel14 = new javax.swing.JLabel();
         OutFileDirectory = new javax.swing.JTextField();
@@ -138,6 +153,9 @@ public class MIPS16Window extends javax.swing.JFrame {
         jLabel17 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         MessageLabel = new javax.swing.JTextArea();
+        clearMemBut = new javax.swing.JButton();
+
+        filechooser.setFileFilter(new MyFilter());
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("MIPS 16 Assembler");
@@ -209,12 +227,12 @@ public class MIPS16Window extends javax.swing.JFrame {
 
         jLabel9.setText("Output Directory :");
 
-        jLabel11.setText("Load File :");
-
-        jLabel12.setText("D:/testout.asm");
-        jLabel12.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
         Openbutton.setText("Open");
+        Openbutton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                OpenbuttonMouseClicked(evt);
+            }
+        });
 
         jLabel14.setText("(0 - 65535) ");
 
@@ -247,6 +265,13 @@ public class MIPS16Window extends javax.swing.JFrame {
         MessageLabel.setLineWrap(true);
         MessageLabel.setRows(5);
         jScrollPane2.setViewportView(MessageLabel);
+
+        clearMemBut.setText("Clear Memory");
+        clearMemBut.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                clearMemButMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -300,20 +325,15 @@ public class MIPS16Window extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel15)
                             .addComponent(jLabel6)
-                            .addComponent(jLabel9)
-                            .addComponent(jLabel11))
+                            .addComponent(jLabel9))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(startaddrfield, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 148, Short.MAX_VALUE)
                                 .addComponent(jLabel14)
                                 .addGap(35, 35, 35))
                             .addComponent(OutFileDirectory)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
-                                .addGap(47, 47, 47)
-                                .addComponent(Openbutton))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(outfileName, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -328,7 +348,11 @@ public class MIPS16Window extends javax.swing.JFrame {
                                 .addComponent(assemblebut, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(clearbuttton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(clearMemBut)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(Openbutton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(Exitbutton, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(31, 31, 31)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -383,12 +407,7 @@ public class MIPS16Window extends javax.swing.JFrame {
                     .addComponent(outfileName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel15)
                     .addComponent(jLabel16))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel12)
-                    .addComponent(Openbutton))
-                .addGap(18, 18, 18)
+                .addGap(47, 47, 47)
                 .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel17)
@@ -402,7 +421,9 @@ public class MIPS16Window extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(assemblebut)
                     .addComponent(Exitbutton)
-                    .addComponent(clearbuttton))
+                    .addComponent(clearbuttton)
+                    .addComponent(Openbutton)
+                    .addComponent(clearMemBut))
                 .addGap(24, 24, 24))
         );
 
@@ -413,6 +434,7 @@ public class MIPS16Window extends javax.swing.JFrame {
 
     private void writebuttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_writebuttonActionPerformed
         // TODO add your handling code here:
+        
     }//GEN-LAST:event_writebuttonActionPerformed
 
     private void readaddressActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readaddressActionPerformed
@@ -439,7 +461,7 @@ public class MIPS16Window extends javax.swing.JFrame {
             tempfile.mkdirs();
         filename=outfileName.getText();
         mm.setDumpfile(directory, filename);
-        outfile=new File(directory,filename+".txt");
+        outfile=new File(directory,filename+".asm");
         em.clear();
         startaddress=dec.NumberParser(startaddrfield.getText());
         
@@ -591,6 +613,50 @@ public class MIPS16Window extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_formWindowClosing
 
+    private void OpenbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_OpenbuttonMouseClicked
+        // TODO add your handling code here:
+        int returnVal = filechooser.showOpenDialog(this);
+        if(returnVal==JFileChooser.APPROVE_OPTION){
+                        
+            outfile=filechooser.getSelectedFile();            
+            directory=outfile.getParent();
+            filename=outfile.getName();
+            filename=filename.substring(0,filename.indexOf('.'));
+            mm.setDumpfile(directory, filename);
+            OutFileDirectory.setText(directory);
+            outfileName.setText(filename);
+            try {
+                FileReader fr=new FileReader(outfile);
+                BufferedReader br=new BufferedReader(fr);
+                String s="",temp="";
+                while(temp!=null){
+                    s+=temp+"\n";
+                    temp=br.readLine();                
+               }
+                s=s.trim();
+               System.out.println(s);           
+               editorarea.setText(s);
+               
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            catch (IOException ex) {
+                Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            mm.setInfile(directory, filename);    
+            logfile=new File(directory,filename+".log");
+            
+        }else{
+            
+        }
+        
+    }//GEN-LAST:event_OpenbuttonMouseClicked
+
+    private void clearMemButMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_clearMemButMouseClicked
+        // TODO add your handling code here:
+        mm.clearmemory();
+    }//GEN-LAST:event_clearMemButMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -626,8 +692,7 @@ public class MIPS16Window extends javax.swing.JFrame {
          * Create and display the form
          */
         
-        MemoryMapper m= new MemoryMapper("D:/","testout.txt");
-        m.dump();
+        
         
         java.awt.EventQueue.invokeLater(new Runnable() {
 
@@ -642,11 +707,11 @@ public class MIPS16Window extends javax.swing.JFrame {
     private javax.swing.JButton Openbutton;
     private javax.swing.JTextField OutFileDirectory;
     private javax.swing.JButton assemblebut;
+    private javax.swing.JButton clearMemBut;
     private javax.swing.JButton clearbuttton;
     private javax.swing.JTextArea editorarea;
+    private javax.swing.JFileChooser filechooser;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
@@ -674,3 +739,16 @@ public class MIPS16Window extends javax.swing.JFrame {
     private javax.swing.JTextField writevalue;
     // End of variables declaration//GEN-END:variables
 }
+class MyFilter extends javax.swing.filechooser.FileFilter {
+        @Override
+        public boolean accept(File file) {
+            // Allow only directories, or files with ".txt" extension
+            return file.isDirectory() || file.getAbsolutePath().endsWith(".asm");
+        }
+        @Override
+        public String getDescription() {
+            // This description will be displayed in the dialog,
+            // hard-coded = ugly, should be done via I18N
+            return "Assembly files (*.asm)";
+        }
+    }
