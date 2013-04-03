@@ -55,31 +55,32 @@ public class MyMap {
         
         opcodes.put("ADDI",311205);
         opcodes.put("SUBI",311206);
-        opcodes.put("MVIH",201308);
-        opcodes.put("MVIL",201309);
+        opcodes.put("MOVSP",110007);
+        opcodes.put("MVIL",201308);
+        opcodes.put("MVIH",201309);
         opcodes.put("LDIDR",311210);
         opcodes.put("STIDR",311211);
         opcodes.put("STC",12);
         
-        opcodes.put("PUSH",100116);
+        opcodes.put("PUSH",101016);
         opcodes.put("JAL",100417);
         opcodes.put("CALL",101018);
         opcodes.put("POP",100119);  //opcodes_tail.put("POP",1);
-        opcodes.put("RET",20);      opcodes_tail.put("RET",1);
+        opcodes.put("RET",20);      //opcodes_tail.put("RET",1);
         opcodes.put("IE",21);
         opcodes.put("ID",22);
         opcodes.put("JMP",100423);
         opcodes.put("JMPI",210224);
-        opcodes.put("JGEO",311225);
+        opcodes.put("JGEO",311227);
         opcodes.put("JLEO",311226);
-        opcodes.put("JCO",300227);
-        opcodes.put("JEO",311228);
-        opcodes.put("HLT",29);  opcodes_tail.put("HLT",0);
+        opcodes.put("JCO",300228);
+        opcodes.put("JEO",311225);
+        opcodes.put("HLT",29);  //opcodes_tail.put("HLT",0);
         opcodes.put("NOP",30);
-        opcodes.put("MOVSP",110031);
-        opcodes.put("LDIDX",311113);
-        opcodes.put("STIDX",311114);
-        opcodes.put("RST",29);  opcodes_tail.put("RST",1);
+        
+        //opcodes.put("LDIDX",311113);
+        //opcodes.put("STIDX",311114);
+        //opcodes.put("RST",);  opcodes_tail.put("RST",1);
         
         
     }

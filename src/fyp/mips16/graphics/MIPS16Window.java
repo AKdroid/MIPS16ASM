@@ -82,7 +82,7 @@ public class MIPS16Window extends javax.swing.JFrame {
         outfileName.setText(filename);
         OutFileDirectory.setText(directory);
         startaddrfield.setText(""+startaddress);
-        logfile=new File(directory,filename+".log");
+        
         
         try {
                 FileReader fr=new FileReader(outfile);
@@ -560,6 +560,7 @@ public class MIPS16Window extends javax.swing.JFrame {
             Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
+            logfile=new File(directory,filename+".log");
             FileWriter logwriter=new FileWriter(logfile);
             Date dt=new Date();
             logwriter.write(new Timestamp(dt.getTime()).toString()+"\r\n");
