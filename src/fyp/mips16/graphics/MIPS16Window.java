@@ -455,10 +455,13 @@ public class MIPS16Window extends javax.swing.JFrame {
         int i,val=-2,ProgramCounter,a,b;
         String editorcontent;
         //String temp
+        if(directory != OutFileDirectory.getText() || filename != outfileName.getText())
+            mm.clearmemory();
         directory=OutFileDirectory.getText();
         File tempfile=new File(directory);
         if(!tempfile.isDirectory())
             tempfile.mkdirs();
+        
         filename=outfileName.getText();
         mm.setDumpfile(directory, filename);
         outfile=new File(directory,filename+".asm");
@@ -623,6 +626,7 @@ public class MIPS16Window extends javax.swing.JFrame {
             directory=outfile.getParent();
             filename=outfile.getName();
             filename=filename.substring(0,filename.indexOf('.'));
+            mm.clearmemory();
             mm.setDumpfile(directory, filename);
             OutFileDirectory.setText(directory);
             outfileName.setText(filename);
