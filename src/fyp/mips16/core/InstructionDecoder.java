@@ -7,6 +7,8 @@ package fyp.mips16.core;
 import fyp.mips16.graphics.MIPS16Window;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -15,12 +17,16 @@ import java.text.ParsePosition;
 public class InstructionDecoder {
  
     MyMap m;
-    
+    Map <String,Integer> Labels;
     public InstructionDecoder(){
         m=new MyMap();
+        //Labels=new HashMap<String,Integer>();
         
     }
-    public int DecodeLine(String ln,int lnno){
+    public void SetMap(MyMap m_){
+        m=m_;
+    }
+    public int DecodeLine(String ln,int lnno,int address){
             
         String temp,opcde;
         String operands[]=new String[1];
@@ -111,8 +117,15 @@ public class InstructionDecoder {
                         x+=value%32; 
                         }   
                     }else{
+                        if(m.Labels.containsKey(operands[p].toUpperCase())){
+                            value=CalculateOffset(address,m.Labels.get(operands[p].toUpperCase()));
+                            if(value<0)value=32+value%17;    
+                            x+=value%32;
+                        }
+                        else{
                         MIPS16Window.em.add_message(2, lnno, ErrorManager.INVALID_IMMEDIATE, operands[p]);
                         return ErrorManager.INVALID_IMMEDIATE;
+                        }
                     }
                     p++;
                 }else if(op[i]==3&&i==2){
@@ -159,8 +172,15 @@ public class InstructionDecoder {
                         x+=value%2048;
                         }
                     }else{
-                        MIPS16Window.em.add_message(2, lnno, ErrorManager.INVALID_IMMEDIATE, operands[p]); 
+                        if(m.Labels.containsKey(operands[p].toUpperCase())){
+                            value=CalculateOffset(address,m.Labels.get(operands[p].toUpperCase()));
+                            if(value<0)value=2048+value%1025;    
+                                x+=value%2048;
+                        }
+                        else{
+                        MIPS16Window.em.add_message(2, lnno, ErrorManager.INVALID_IMMEDIATE, operands[p]);
                         return ErrorManager.INVALID_IMMEDIATE;
+                        }
                     }
                     p++;
                 }
@@ -226,4 +246,10 @@ public class InstructionDecoder {
              
         return x;
     }
+    public int CalculateOffset(int oldaddress,int newaddress){
+        int x=0;
+        x=(newaddress-oldaddress)/2-1;
+        return x;
+    }
+    
 }

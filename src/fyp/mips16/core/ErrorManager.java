@@ -45,7 +45,7 @@ public class ErrorManager {
         ErrMessages.put(LESS_OPERANDS, "Opcode requires more operands");
         ErrMessages.put(MORE_OPERANDS, "Opcode requires less operands");
         ErrMessages.put(UNKNOWN_IDENTIFIER, "Unknown Identifier");
-        ErrMessages.put(INVALID_IMMEDIATE, "Immediate value should begin with #");
+        ErrMessages.put(INVALID_IMMEDIATE, "Immediate value should begin with # or unknown Label");
         ErrMessages.put(INVALID_NUMERAL, "Invalid Numeric value");
         //Warning Messages
         ErrMessages.put(NUMERAL_OVERFLOW,"Exceeds range");

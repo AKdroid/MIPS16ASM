@@ -4,15 +4,13 @@
  */
 package fyp.mips16.graphics;
 
-import fyp.mips16.core.InstructionDecoder;
-import fyp.mips16.core.MemoryMapper;
+import fyp.mips16.core.Error;
+import fyp.mips16.core.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import fyp.mips16.core.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import fyp.mips16.core.Error;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.io.*;
@@ -23,8 +21,8 @@ import java.util.Map;
 import javax.swing.JFileChooser;
 
 /**
- *
- * @author Akhil
+ * 
+ * @author Akhil Rao
  */
 public class MIPS16Window extends javax.swing.JFrame {
 
@@ -41,6 +39,7 @@ public class MIPS16Window extends javax.swing.JFrame {
     public static ErrorManager em;
     Map <Integer,Integer> memorywrites;
     Character buffer[];
+    MyMap map;
     
     public MIPS16Window() {
         initComponents();
@@ -50,7 +49,7 @@ public class MIPS16Window extends javax.swing.JFrame {
         setIconImage(Toolkit.getDefaultToolkit().createImage("mipsicon.png"));
         em=new ErrorManager();
         dec=new InstructionDecoder();
-        
+        map=new MyMap();
         configfile=new File("config.txt");
         if(!configfile.exists())
             try {
@@ -469,19 +468,20 @@ public class MIPS16Window extends javax.swing.JFrame {
         startaddress=dec.NumberParser(startaddrfield.getText());
         
         errorflag=false;
-        if(startaddress==-100000){
+        if(startaddress==ErrorManager.INVALID_NUMERAL){
             startaddress =0;
             startaddrfield.setText(""+0);
         }
         ProgramCounter=startaddress;
         System.out.println("PC="+ProgramCounter);
         editorcontent=editorarea.getText();
-        lines=editorcontent.split("\n");
-        if(lines.length>0){
+        lines=map.ExtractLabels(editorcontent, startaddress);
+        dec.SetMap(map);
+        if(lines.length<=0){
             Error x=new Error(0,-1,ErrorManager.MESSAGE_ASSEMBLING,outfile.getAbsolutePath());
             statustext=x.toString();
             MessageLabel.setText(statustext);
-            
+            return;
         }
         for(i=0;i<lines.length;i++){
             System.out.println(lines[i]);
@@ -510,8 +510,13 @@ public class MIPS16Window extends javax.swing.JFrame {
                     errorflag=true;
                 }
             }
+            else if(lines[i].length()>0&&lines[i].charAt(0)=='@'){
+                ProgramCounter = dec.NumberParser(lines[i].substring(1).trim());
+                if(ProgramCounter==ErrorManager.INVALID_NUMERAL)
+                    em.add_message(2, i+1, ErrorManager.INVALID_NUMERAL, lines[i].substring(1));
+            }
             else{
-            val=dec.DecodeLine(lines[i],i+1);
+            val=dec.DecodeLine(lines[i],i+1,ProgramCounter);
             if(val<-1){
                 errorflag=true;
                 
@@ -554,6 +559,7 @@ public class MIPS16Window extends javax.swing.JFrame {
             } 
             MessageLabel.setText(statustext);
             fout=new FileWriter(outfile);
+            lines=editorcontent.split("\n");
             for(i=0;i<lines.length;i++){
             fout.write(lines[i]);
             fout.write("\r\n");
