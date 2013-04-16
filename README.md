@@ -1,7 +1,7 @@
 MIPS16ASM
 =========
 
-An assembler for MIPS-16 ISA version 1.0.
+An assembler for MIPS-16 ISA version 1.1.
 
 @author : Akhil Rao aka AkDroid.
 
@@ -9,7 +9,8 @@ This project aims in providing a basic assembler for MIPS-16 arrchitecture whose
 done by us.
 
 The assembler checks for proper format of all the possible 37 instructions and is majorly being used by us for debugging the hardware implementation.
-Support for labels has not been provided yet and will be a subject of future versions.
+The instruction set details can be found here: 
+http://www.ijsrp.org/research-paper-0413.php?rp=P161112
 
 The assembler can be launched by running the MIPS16ASM.jar file in dist folder of the source tree. A JRE should be installed in the system for do that. The application should be able to run in all OSes including Windows , Linux and MAC OS X although this hasn't been tested.
 
@@ -36,6 +37,8 @@ How-to-guides
 6. Opening an existing file: Opening of an asm file is possible by clicking on the Open button,pointing it to the directory and choosing the required file. The changes done to the previous file after the last build will be discarded and the asssembly code will be loaded into the editor. Memory map if existing will also be updated. 
 7. Clear Memory Map: Memory Map can be cleared to store zero by pressing the Clear Memory button.
 8. Clear editor text: Clear the editor are by clicking on Clear button.
+9. Single line comments can be added using "//" .
+10. Labels can be added to the line as LABEL: ADD r1,r2,r3 
 
 If you find a bug open an issue in github.
 
