@@ -4,6 +4,7 @@
  */
 package fyp.mips16.core;
 
+import fyp.mips16.graphics.MIPS16Window;
 import java.util.*;
 
 /**
@@ -102,8 +103,10 @@ public class MyMap {
         for(i=0;i<lines.length;i++){
             separated=lines[i].split("//");     //separate comments
             separated[0]=separated[0].trim();
-            if(separated[0].length()==0)
+            if(separated[0].length()==0){
+                filtered.add(" ");
                 continue;
+            }
             if(separated[0].length()>1 && separated[0].charAt(0)=='@'){
                 pc=dec.NumberParser(separated[0].substring(1));
                 if(pc==ErrorManager.INVALID_NUMERAL)
@@ -112,11 +115,20 @@ public class MyMap {
             }
             else if(separated[0].contains(":")){
                 separated=separated[0].split(":");
+                if(Labels.containsKey(separated[0].toUpperCase().trim()))
+                {
+                    MIPS16Window.em.add_message(2, i+1, ErrorManager.DUPLICATE_LABEL, separated[0]);
+                    return null;
+                }
                 Labels.put(separated[0].toUpperCase().trim(),pc);
                 if(separated.length==2)
                 {
                     filtered.add(separated[1].trim());
                     pc+=2;
+                }
+                else
+                {
+                    filtered.add(" ");
                 }
             }else{
                 filtered.add(separated[0]);

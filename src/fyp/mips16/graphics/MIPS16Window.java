@@ -476,6 +476,9 @@ public class MIPS16Window extends javax.swing.JFrame {
         System.out.println("PC="+ProgramCounter);
         editorcontent=editorarea.getText();
         lines=map.ExtractLabels(editorcontent, startaddress);
+        if(lines==null){
+            errorflag=true;
+        }else{
         dec.SetMap(map);
         if(lines.length<=0){
             Error x=new Error(0,-1,ErrorManager.MESSAGE_ASSEMBLING,outfile.getAbsolutePath());
@@ -532,6 +535,7 @@ public class MIPS16Window extends javax.swing.JFrame {
                 
             }
             }
+        }
         }
         if(errorflag==false){
             statustext+="\r\n";

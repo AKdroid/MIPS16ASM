@@ -21,6 +21,7 @@ public class ErrorManager {
     public static int MORE_OPERANDS=-4;
     public static int UNKNOWN_IDENTIFIER=-5;
     public static int INVALID_IMMEDIATE=-7;
+    public static int DUPLICATE_LABEL=-8;
     public static int INVALID_NUMERAL=-100000;
     
     public static int NUMERAL_OVERFLOW=-100001;
@@ -56,6 +57,7 @@ public class ErrorManager {
         ErrMessages.put(MESSAGE_GENERATING_DUMP,"Generating memory map dump file ");
         ErrMessages.put(MESSAGE_SAVING_ASM,"Saving the assembly code ");
         ErrMessages.put(MESSAGE_SUCCESS,"Assembly Successful");
+        ErrMessages.put(DUPLICATE_LABEL,"Redefinition of identifier");
     }
     public void add_message(int type,int Line_no,int error_code,String extras){
         if(type==1)wrncnt++;
