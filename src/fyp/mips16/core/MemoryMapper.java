@@ -9,7 +9,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Maintains the memory space image.
+ * Performs write and read operations
+ * Dumps the memory space into a .mmap file specified by the name
  * @author Akhil
  */
 public class MemoryMapper {

@@ -26,13 +26,14 @@ public class InstructionDecoder {
     public void SetMap(MyMap m_){
         m=m_;
     }
+    //Decodes Line By Line
     public int DecodeLine(String ln,int lnno,int address){
             
         String temp,opcde;
         String operands[]=new String[1];
         int x,value,NumOp,divider,p,op[],i;
-        x=0;
-        op=new int[3];
+        x=0; //machine code
+        op=new int[3]; //stores operands
         ln=ln.trim();
         if(ln.length()==0)return -1;        //ignore empty lines
         if(ln.contains(" "))
@@ -74,6 +75,8 @@ public class InstructionDecoder {
                 divider=divider/10;
             }
             i=p=0;
+            // Check for different errors and warnings 
+            //if found add it to the ErrorManager Queue
             if(NumOp==0)return x;
             System.out.println("values= "+NumOp+" "+operands.length);
             if(NumOp>operands.length){
@@ -204,6 +207,9 @@ public class InstructionDecoder {
         return str.length() == pos.getIndex();
     }
     public int NumberParser(String str){
+        // Parses valid number for different formats from Strings 
+        // used for parsing numerical arguments like immediate values and 
+        // address jumps and memory initializations
         int x=0;
         String temp="";
         if(str.length()>2)
@@ -244,9 +250,10 @@ public class InstructionDecoder {
              
              else return ErrorManager.INVALID_NUMERAL; 
              
-        return x;
+        return x; //return the 16 bit instruction word
     }
     public int CalculateOffset(int oldaddress,int newaddress){
+        //Calculates offset in case of labels
         int x=0;
         x=(newaddress-oldaddress)/2-1;
         return x;

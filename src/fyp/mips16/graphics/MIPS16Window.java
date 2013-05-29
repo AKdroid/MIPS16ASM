@@ -450,21 +450,23 @@ public class MIPS16Window extends javax.swing.JFrame {
         // TODO add your handling code here:
         String lines[],addval[];
         statustext="";
-        memorywrites=new HashMap<Integer,Integer>();
+        memorywrites=new HashMap<Integer,Integer>(); //tracking individual memory writes
         int i,val=-2,ProgramCounter,a,b;
         String editorcontent;
         //String temp
+        //Set the directory for output file and the filename
         if(directory != OutFileDirectory.getText() || filename != outfileName.getText())
             mm.clearmemory();
         directory=OutFileDirectory.getText();
         File tempfile=new File(directory);
         if(!tempfile.isDirectory())
-            tempfile.mkdirs();
+            tempfile.mkdirs(); //create directory if it does not exist
         
         filename=outfileName.getText();
         mm.setDumpfile(directory, filename);
         outfile=new File(directory,filename+".asm");
         em.clear();
+        //set startaddress
         startaddress=dec.NumberParser(startaddrfield.getText());
         
         errorflag=false;
@@ -472,10 +474,15 @@ public class MIPS16Window extends javax.swing.JFrame {
             startaddress =0;
             startaddrfield.setText(""+0);
         }
+        /*
+         * If errorflag = true , errors were present
+         * else no errors were present and .mmap can be created
+         */
         ProgramCounter=startaddress;
         System.out.println("PC="+ProgramCounter);
         editorcontent=editorarea.getText();
-        lines=map.ExtractLabels(editorcontent, startaddress);
+        //Pass 1 : Separate Comments and Assign values to the Labels
+        lines=map.ExtractLabels(editorcontent, startaddress); //Divide the code into lines
         if(lines==null){
             errorflag=true;
         }else{
@@ -489,7 +496,8 @@ public class MIPS16Window extends javax.swing.JFrame {
         for(i=0;i<lines.length;i++){
             System.out.println(lines[i]);
             if(lines[i].contains("=")){
-                addval=lines[i].split("=");
+                addval=lines[i].split("="); //Data Memory initializations
+                
                 //System.out.println("addval "+addval[0]+" "+addval[1] );
                 //System.out.println("addval"+dec.NumberParser(addval[0])+" "+dec.NumberParser(addval[1]));
                 a=dec.NumberParser(addval[0]);
@@ -502,7 +510,7 @@ public class MIPS16Window extends javax.swing.JFrame {
                         em.add_message(1,i+1,ErrorManager.NUMERAL_OVERFLOW,addval[0]);
                     if(b>255)
                         em.add_message(1,i+1,ErrorManager.NUMERAL_OVERFLOW,addval[1]);
-                    mm.writeMemory(a%65536, b%256);
+                    mm.writeMemory(a%65536, b%256); //Memory values updated to data
                 }else{
                     if(addval.length!=2)
                         em.add_message(2, i+1, ErrorManager.UNKNOWN_IDENTIFIER, lines[i]);
@@ -513,20 +521,22 @@ public class MIPS16Window extends javax.swing.JFrame {
                     errorflag=true;
                 }
             }
-            else if(lines[i].length()>0&&lines[i].charAt(0)=='@'){
+            else if(lines[i].length()>0&&lines[i].charAt(0)=='@'){ //Address jumps
                 ProgramCounter = dec.NumberParser(lines[i].substring(1).trim());
                 if(ProgramCounter==ErrorManager.INVALID_NUMERAL)
                     em.add_message(2, i+1, ErrorManager.INVALID_NUMERAL, lines[i].substring(1));
             }
             else{
+                // Line by Line instruction decoding
             val=dec.DecodeLine(lines[i],i+1,ProgramCounter);
             if(val<-1){
                 errorflag=true;
                 
             }
-            else if(val==-1)
+            else if(val==-1) //empty lines are ignored
                 continue;
             else{
+                //update memory with code
                 if(memorywrites.containsKey(ProgramCounter)||memorywrites.containsKey(ProgramCounter+1))
                     em.add_message(1,i+1,ErrorManager.MEMORY_CODE_OVERLAP,""+ProgramCounter+":"+ProgramCounter+1);
                 mm.writeMemory(ProgramCounter, (val%256));
@@ -538,6 +548,7 @@ public class MIPS16Window extends javax.swing.JFrame {
         }
         }
         if(errorflag==false){
+            //Write to .mmap file
             statustext+="\r\n";
             statustext+="0 Errors "+em.wrncnt+" Warnings;\r\r\n"; 
             statustext+=new Error(0,0,ErrorManager.MESSAGE_GENERATING_DUMP,mm.dumpFile.getAbsolutePath())+"\r\n";
@@ -550,7 +561,7 @@ public class MIPS16Window extends javax.swing.JFrame {
             //System.out.println(editorcontent);
             statustext+=new Error(0,0,ErrorManager.MESSAGE_SAVING_ASM,outfile.getAbsolutePath());
             statustext+="\r\n";
-            MessageLabel.setText(statustext);
+            MessageLabel.setText(statustext); // Assembly output in the window
             if(errorflag==false)
                statustext+=new Error(0,0,ErrorManager.MESSAGE_SUCCESS,""); 
             else{
@@ -563,7 +574,7 @@ public class MIPS16Window extends javax.swing.JFrame {
             } 
             MessageLabel.setText(statustext);
             fout=new FileWriter(outfile);
-            lines=editorcontent.split("\n");
+            lines=editorcontent.split("\n"); //write to .asm file
             for(i=0;i<lines.length;i++){
             fout.write(lines[i]);
             fout.write("\r\n");
@@ -573,7 +584,7 @@ public class MIPS16Window extends javax.swing.JFrame {
             Logger.getLogger(MIPS16Window.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            logfile=new File(directory,filename+".log");
+            logfile=new File(directory,filename+".log"); //write to .log fil with timestampe
             FileWriter logwriter=new FileWriter(logfile);
             Date dt=new Date();
             logwriter.write(new Timestamp(dt.getTime()).toString()+"\r\n");
